@@ -81,7 +81,7 @@ def on_publish(unused_client, unused_userdata, unused_mid):
 def createJSON(id, unique_id, timestamp, heartrate):
     data = {
 	'sensorID' : id,
-	'readingID' : unique_id,
+	'uniqueID' : unique_id,
 	'timecollected' : timestamp,
 	'heartrate' : heartrate
     }
