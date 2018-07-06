@@ -47,9 +47,7 @@ receiver_in = 23 # GPIO pin number that the receiver is connected to
 
 # Constants that shouldn't need to be changed
 
-SEND_INTERVAL = 10 #how often to send data (seconds)
 token_life = 60 #lifetime of the JWT token (minutes)
-sensor = BME280(t_mode=BME280_OSAMPLE_8, p_mode=BME280_OSAMPLE_8, h_mode=BME280_OSAMPLE_8)
 
 # end of constants
 
@@ -136,16 +134,42 @@ def main():
 
       last_checked = 0
       while time.time() < jwt_refresh: # as long as the JWT isn't ready to expire, otherwise break this loop so the JWT gets refreshed
-        if time.time() - last_checked > SEND_INTERVAL:
-          last_checked = time.time()
-          #monitorForPulse
-          #bpm = calcBPM
-          currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-          payload = createJSON(sensorID, currentTime, bpm)
-          client.publish(_MQTT_TOPIC, payload, qos=1)
-          print("{}\n".format(payload))
-        time.sleep(0.5)
+        try:
+	    inputReceived = io.input(receiver_in) # inputReceived will either be 1 or 0
 
+            if inputReceived == 1:
+                if previousInput == 0: # the heart beat signal went from low to high
+                    totalSampleCounter = totalSampleCounter + 1
+                    if totalSampleCounter == 1: # the very first beat since the program started running
+                        print "Receiving heart beat signals"
+                
+                    if sampleCounter == -1: # the first beat received since the counter was reset
+                        sampleCounter = 0
+                        firstSampleTime = time.time() # set the time to start counting beats
+                        lastPulseTime = firstSampleTime
+                    else:
+                        sampleCounter = sampleCounter + 1
+                        thisPulseTime = time.time()
+                        instantBPM = 60/(thisPulseTime - lastPulseTime)
+                        # print "Total measured beats: " + str(totalSampleCounter) + ", instantBPM: " + str(instantBPM) + ", time: " + str(thisPulseTime)
+                        lastPulseTime = thisPulseTime
+                        if instantBPM < rejectBPM: # this heart rate is likely due to a bad connection
+                            sampleCounter = -1 # reset counter so that the bad data isn't included in a BPM average
+                        
+                    if sampleCounter == heartbeatsToCount: # time to calculate the average BPM
+                        sampleCounter = -1 # reset the sample counter
+                        lastSampleTime = lastPulseTime # set the time the last beat was detected
+                        bpm = calcBPM(firstSampleTime, lastSampleTime)
+                        currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                        payload = createJSON(sensorID, currentTime, bpm)
+                        client.publish(_MQTT_TOPIC, payload, qos=1)
+                        print("{}\n".format(payload))
+                        time.sleep(0.5)
+            previousInput = inputReceived
+        except Exception as e:
+	  print "There was an error"
+	  print (e)
+		
       client.loop_stop()
 
 if __name__ == '__main__':
