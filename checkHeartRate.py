@@ -16,6 +16,7 @@
 
 import time
 import datetime
+import uuid
 import json
 import jwt
 import RPi.GPIO as io
@@ -77,11 +78,12 @@ def on_connect(unusued_client, unused_userdata, unused_flags, rc):
 def on_publish(unused_client, unused_userdata, unused_mid):
     print('on_publish')
 
-def createJSON(id, timestamp, heartrate):
+def createJSON(id, unique_id, timestamp, heartrate):
     data = {
-      'sensorID' : id,
-      'timecollected' : timestamp,
-      'heartrate' : heartrate
+	'sensorID' : id,
+	'readingID' : unique_id,
+	'timecollected' : timestamp,
+	'heartrate' : heartrate
     }
 
     json_str = json.dumps(data)
@@ -90,10 +92,6 @@ def createJSON(id, timestamp, heartrate):
 def calcBPM(startTime, endTime):   
     sampleSeconds = endTime - startTime  # calculate time gap between first and last heartbeat
     bpm = (60/sampleSeconds)*(heartbeatsToCount)
-    #currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    #heartrateJSON = createJSON(sensorID, currentTime, bpm)
-    #publish_message(project, topic, heartrateJSON)
-    #time.sleep(5) # wait to allow the message publication process to finish (it can interfere with capturing heart beat signals)
     return bpm
 
 def main():
@@ -108,6 +106,7 @@ def main():
     firstSampleTime = 0 # time of first heart beat for calculating an average BPM
     lastSampleTime = 0 # time of the last heart beat for calculating an average BPM
     instantBPM = 0 # BPM calculated from the time between two heartbeats
+    uniqueID = -1 # unique id if dedeplication is needed
 
     io.setup(receiver_in, io.IN) # initialize receiver GPIO to the pin that will take input
     print "Ready. Waiting for signal."
@@ -161,7 +160,8 @@ def main():
                         lastSampleTime = lastPulseTime # set the time the last beat was detected
                         bpm = calcBPM(firstSampleTime, lastSampleTime)
                         currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-                        payload = createJSON(sensorID, currentTime, bpm)
+			uniqueID = sensorID + "-" + str(uuid.uuid4())
+                        payload = createJSON(sensorID, uniqueID, currentTime, bpm)
                         client.publish(_MQTT_TOPIC, payload, qos=1)
                         print("{}\n".format(payload))
                         time.sleep(0.5)
