@@ -92,14 +92,24 @@ def createJSON(id, timestamp, heartrate):
 def calcBPM(startTime, endTime):   
     sampleSeconds = endTime - startTime  # calculate time gap between first and last heartbeat
     bpm = (60/sampleSeconds)*(heartbeatsToCount)
-    currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    heartrateJSON = createJSON(sensorID, currentTime, bpm)
+    #currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    #heartrateJSON = createJSON(sensorID, currentTime, bpm)
     #publish_message(project, topic, heartrateJSON)
-    time.sleep(5) # wait to allow the message publication process to finish (it can interfere with capturing heart beat signals)
+    #time.sleep(5) # wait to allow the message publication process to finish (it can interfere with capturing heart beat signals)
+    return bpm
 
 def main():
     _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
     _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
+	
+    totalSampleCounter = 0 # total heartbeats measured
+    sampleCounter = -1 # counter to determine when to calculate an average BPM
+    previousInput = 0 # indicator of whether the last sensor input has high or low
+    lastPulseTime = 0 # time of the last heart beat
+    thisPulseTime = 0 # time of this heart beat
+    firstSampleTime = 0 # time of first heart beat for calculating an average BPM
+    lastSampleTime = 0 # time of the last heart beat for calculating an average BPM
+    instantBPM = 0 # BPM calculated from the time between two heartbeats
 
     io.setup(receiver_in, io.IN) # initialize receiver GPIO to the pin that will take input
     print "Ready. Waiting for signal."
@@ -129,7 +139,7 @@ def main():
         if time.time() - last_checked > SEND_INTERVAL:
           last_checked = time.time()
           #monitorForPulse
-          #bpm = calculateBPM
+          #bpm = calcBPM
           currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
           payload = createJSON(sensorID, currentTime, bpm)
           client.publish(_MQTT_TOPIC, payload, qos=1)
