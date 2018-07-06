@@ -225,6 +225,7 @@ def main():
         print('Publishing message #{}: \'{}\''.format(i, payload))
         client.publish(mqtt_topic, payload, qos=1)
         i += 1
+        time.sleep(0.1)
 
     # End the network loop and finish.
     client.loop_stop()
