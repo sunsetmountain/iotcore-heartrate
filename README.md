@@ -10,8 +10,8 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 2. Create a BigQuery dataset and table (replace PROJECT_ID with your project):
 
-        bq --location=US mk --dataset PROJECT_ID:heartRateData
-        bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
+        $bq --location=US mk --dataset PROJECT_ID:heartRateData
+        $bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
 
 3. Create a PubSub topic:
 
