@@ -17,24 +17,25 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
         $gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
 
-4. Create a Dataflow process
+4. Create a Dataflow process:
 
         Calling Google-provided Dataflow templates from the command line is not yet supported. 
         Follow the Codelab to do so via the Cloud Console.
 
-4. Create a registry:
+5. Create a registry:
 
         $gcloud beta iot registries create heartrate \
             --project=PROJECT_ID \
             --region=us-central1 \
             --event-pubsub-topic=projects/PROJECT_ID/topics/heartratedata
 
-5. Create a VM
+6. Create a VM
 
         $gcloud compute instances create data-simulator-1 --zone us-central1-c
 
-6. Use the Cloud Console to SSH to the newly created VM. From the command line, install the necessary software and create a security certificate.
+7. Connect to the VM. Install the necessary software and create a security certificate. Note the full path of the directory that the security certificate is stored in (the results of the "pwd" command). Then exit the connection.
 
+        $gcloud compute ssh data-simulator-1
         $sudo apt-get update
         $sudo apt-get install git
         $git clone https://github.com/googlecodelabs/iotcore-heartrate
@@ -43,12 +44,15 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         $./initialsoftware.sh
         $chmod +x generate_keys.sh
         $./generate_keys.sh
+        $cd ../.ssh
+        $pwd
+        $exit
 
-7. Return to the Cloud shell and copy the public key that was just generated.
+8. Use SCP to copy the public key that was just generated. The path the SSH keys was the result of the "pwd" command in the previous step.
 
-        $gcloud compute scp data-simulator-1:/home/[USER_NAME]/.ssh/ec_public.pem .
+        $gcloud compute scp data-simulator-1:/[PATH TO SSH KEYS]/ec_public.pem .
 
-8. Register a device:
+9. Register the VM as an IoT device:
 
         $gcloud beta iot devices create myVM \
             --project=PROJECT_ID \
@@ -56,6 +60,9 @@ NOTE: Replace PROJECT_ID with your project in the following commands
             --registry=heartrate \
             --public-key path=ec_public.pem,type=es256
 
-8. Return to the VM console. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
+10. Connect to the VM. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
 
+        $gcloud compute ssh data-simulator-1
+        $cd iotcore-heartrate
         $python simulateData.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
+        $exit
