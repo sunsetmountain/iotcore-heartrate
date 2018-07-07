@@ -24,31 +24,13 @@ import RPi.GPIO as io
 from tendo import singleton
 import paho.mqtt.client as mqtt
 
-
 me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this program is already running
 
-# Define some project-based variables to be used below. This should be the only
-# block of variables that you need to edit in order to run this script
-
-#ssl_private_key_filepath = './ec_private.pem' #or wherever the security certificate is located
-#ssl_algorithm = 'ES256' # Either RS256 or ES256
-#root_cert_filepath = './roots.pem'
-#project_id = '<GCP project id>' #change to your project ID
-#gcp_location = '<GCP location>' #change to the location selected for IoT Core
-#registry_id = '<IoT Core registry id>'
-#device_id = '<IoT Core device id>'
-
 # set the following to be indicative of how you are using your heart rate sensor
-#sensorID = "s-RaspberryPiHeartRateSensor"
 rejectBPM = 45 # reject anything that is below this BPM threshold
 heartbeatsToCount = 10 # number of heart beats to sample before calculating an average BPM
-#receiver_in = 23 # GPIO pin number that the receiver is connected to
-
-# end of user-variables
-
 
 # Constants that shouldn't need to be changed
-
 token_life = 60 #lifetime of the JWT token (minutes)
 
 # end of constants
@@ -165,6 +147,7 @@ def main():
     googleMQTTURL = args.mqtt_bridge_hostname
     googleMQTTPort = args.mqtt_bridge_port
     receiver_in = args.receiver_in
+    
     _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
     _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
 	
@@ -180,7 +163,6 @@ def main():
 
     io.setup(receiver_in, io.IN) # initialize receiver GPIO to the pin that will take input
     print "Ready. Waiting for signal."
-    #monitorForPulse()
     
     while True:
 
@@ -203,6 +185,7 @@ def main():
 
       last_checked = 0
       while time.time() < jwt_refresh: # as long as the JWT isn't ready to expire, otherwise break this loop so the JWT gets refreshed
+        # Continuously monitor for heart beat signals being received
         try:
 	    inputReceived = io.input(receiver_in) # inputReceived will either be 1 or 0
 
