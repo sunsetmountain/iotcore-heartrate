@@ -76,7 +76,7 @@ def parse_command_line_args():
     parser.add_argument(
             '--private_key_file',
 	    default='./ec_private.pem',
-            required=True, help='Path to private key file.')
+            help='Path to private key file.')
     parser.add_argument(
             '--algorithm',
             choices=('RS256', 'ES256'),
@@ -115,11 +115,11 @@ def parse_command_line_args():
     return parser.parse_args()
 
 
-def create_jwt(cur_time, privateKeyFilepath, algorithmType):
+def create_jwt(cur_time, projectID, privateKeyFilepath, algorithmType):
   token = {
       'iat': cur_time,
       'exp': cur_time + datetime.timedelta(minutes=token_life),
-      'aud': project_id
+      'aud': projectID
   }
 
   with open(privateKeyFilePath, 'r') as f:
@@ -189,7 +189,7 @@ def main():
       # authorization is handled purely with JWT, no user/pass, so username can be whatever
       client.username_pw_set(
           username='unused',
-          password=create_jwt(cur_time, ssl_private_key_filepath, ssl_algorithm))
+          password=create_jwt(cur_time, project_id, ssl_private_key_filepath, ssl_algorithm))
 
       client.on_connect = on_connect
       client.on_publish = on_publish
