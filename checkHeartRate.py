@@ -29,7 +29,7 @@ me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this 
 # Define some project-based variables to be used below. This should be the only
 # block of variables that you need to edit in order to run this script
 
-ssl_private_key_filepath = './ec_private.pem' #or whereever the security certificate is located
+ssl_private_key_filepath = './ec_private.pem' #or wherever the security certificate is located
 ssl_algorithm = 'ES256' # Either RS256 or ES256
 root_cert_filepath = './roots.pem'
 project_id = '<GCP project id>' #change to your project ID
