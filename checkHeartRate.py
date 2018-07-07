@@ -160,7 +160,7 @@ def main():
                         lastSampleTime = lastPulseTime # set the time the last beat was detected
                         bpm = calcBPM(firstSampleTime, lastSampleTime)
                         currentTime = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-			uniqueID = sensorID + "-" + str(uuid.uuid4())
+			uniqueID = str(uuid.uuid4()) + "-" + sensorID
                         payload = createJSON(sensorID, uniqueID, currentTime, bpm)
                         client.publish(_MQTT_TOPIC, payload, qos=1)
                         print("{}\n".format(payload))
