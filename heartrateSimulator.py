@@ -152,7 +152,7 @@ def parse_command_line_args():
     parser.add_argument(
             '--algorithm',
             choices=('RS256', 'ES256'),
-            required=True,
+            default='ES256',
             help='Which encryption algorithm to use to generate the JWT.')
     parser.add_argument(
             '--cloud_region', default='us-central1', help='GCP cloud region')
