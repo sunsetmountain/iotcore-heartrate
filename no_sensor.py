@@ -31,8 +31,6 @@ from random import randint
 import json
 import jwt
 import paho.mqtt.client as mqtt
-import csv
-import numpy as np
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
