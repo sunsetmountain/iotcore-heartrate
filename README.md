@@ -1,25 +1,36 @@
 # iotcore-heartrate
 
-This folder contains a Python client that demonstrates an overview of the
-Google Cloud IoT Core platform.
+This project contains the code necessary to setup either (1) a Raspberry Pi with a heart rate sensor or (2) a Google Cloud Compute Engine VM with a data simulation script in order to demonstrate how Google Cloud IoT Core works. The full instructions are contained this Codelab (URL TBD).
 
-## Quickstart
-1. Install the gCloud CLI as described in [the Cloud IoT Core documentation](https://cloud.google.com/iot/docs/how-tos/getting-started#set_up_the_google_cloud_sdk_and_gcloud). If you are using Cloud shell which is the recommended method, it comes with gCloud pre-installed
+## Data Simulation Quickstart
 
-2. Create a PubSub topic :
+NOTE: Replace PROJECT_ID with your project in the following commands
 
-        $gcloud beta pubsub topics create projects/iot-taw-project/topics/iot-data
+1. Login to Google Cloud. If desired, create a new project and select it once it is ready. Open a Cloud shell
+
+2. Create a BigQuery dataset and table (replace PROJECT_ID with your project):
+
+        $bq --location=US mk --dataset PROJECT_ID:heartRateData
+        $bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
+
+3. Create a PubSub topic:
+
+        $gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
 
 3. Add the service account `cloud-iot@system.gserviceaccount.com` with the role `Publisher` to that
 PubSub topic from the [Cloud Developer Console](https://console.cloud.google.com). This service account will be used by IOT Core
 to publish the data to the Cloud Pub/Sub topic created above.
 
+4. Create a Dataflow process
+
+        Calling Google-provided Dataflow templates from the command line is not yet supported
+
 4. Create a registry:
 
-        $gcloud beta iot registries create iot-taw-registry \
-            --project=iot-taw-project \
+        $gcloud beta iot registries create heartrate \
+            --project=PROJECT_ID \
             --region=us-central1 \
-            --event-pubsub-topic=projects/iot-taw-project/topics/iot-data
+            --event-pubsub-topic=projects/PROJECT_ID/topics/iot-data
 
 5. Use the `generate_keys.sh` script to generate your signing keys. This script creates a ES256 Public/Private Key pair (ec_public.pem/ec_private.pem) and also retrieves the Google root certificate (roots.pem) in the current directory
 
@@ -27,10 +38,10 @@ to publish the data to the Cloud Pub/Sub topic created above.
 
 6. Register a device:
 
-        $gcloud beta iot devices create iot-device \
-            --project=iot-taw-project \
+        $gcloud beta iot devices create myVM \
+            --project=PROJECT_ID \
             --region=us-central1 \
-            --registry=iot-taw-registry \
+            --registry=heartrate \
             --public-key path=ec_public.pem,type=es256
 
 7. Install the dependencies needed to run the python client:
@@ -39,7 +50,7 @@ to publish the data to the Cloud Pub/Sub topic created above.
 
 8. Send the mock data (data/SampleData.json) using the no_sensor_cloudiot_gen.py script. This publishes 1000 JSON-formatted messages to the device's MQTT topic one by one:
 
-        $python no_sensor_cloudiot_gen.py --registry_id=iot-taw-registry --project_id=iot-taw-project --device_id=iot-device --algorithm=ES256 --private_key_file=ec_private.pem
+        $python simulateData.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
 
     To see all the command line options the script accepts, use 'python no_sensor_cloudiot_gen.py -h'. If you need to generate different mock data, you can use the data/datagen.py script and then use the --json_data_file option to specify the json file which contains your new data.
     The script pushes JSON-formatted data as follows.
