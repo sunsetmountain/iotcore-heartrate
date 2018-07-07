@@ -32,6 +32,7 @@ heartbeatsToCount = 10 # number of heart beats to sample before calculating an a
 
 # Constants that shouldn't need to be changed
 token_life = 60 #lifetime of the JWT token (minutes)
+gpioIN = 23 #GPIO pin input on the Raspberry Pi that will receive heart rate receiver information
 
 # end of constants
 
@@ -87,7 +88,7 @@ def parse_command_line_args():
             help=('Expiration time, in minutes, for JWT tokens.'))
     parser.add_argument(
             '--receiver_in',
-            default=23,
+            default=gpioIN,
 	    type=int,
             help=('GPIO input pin for the heart rate sensor'))
     return parser.parse_args()
