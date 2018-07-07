@@ -17,26 +17,37 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
         $gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
 
-3. Add the service account `cloud-iot@system.gserviceaccount.com` with the role `Publisher` to that
-PubSub topic from the [Cloud Developer Console](https://console.cloud.google.com). This service account will be used by IOT Core
-to publish the data to the Cloud Pub/Sub topic created above.
-
 4. Create a Dataflow process
 
-        Calling Google-provided Dataflow templates from the command line is not yet supported
+        Calling Google-provided Dataflow templates from the command line is not yet supported. Follow the Codelab to do so via the Cloud Console.
 
 4. Create a registry:
 
         $gcloud beta iot registries create heartrate \
             --project=PROJECT_ID \
             --region=us-central1 \
-            --event-pubsub-topic=projects/PROJECT_ID/topics/iot-data
+            --event-pubsub-topic=projects/PROJECT_ID/topics/heartratedata
 
-5. Use the `generate_keys.sh` script to generate your signing keys. This script creates a ES256 Public/Private Key pair (ec_public.pem/ec_private.pem) and also retrieves the Google root certificate (roots.pem) in the current directory
+5. Create a VM
 
+        $gcloud compute instances create data-simulator-1 --zone us-central1-c
+
+6. Use the Cloud Console to SSH to the newly created VM. From the command line, install the necessary software and create a security certificate.
+
+        $sudo apt-get update
+        $sudo apt-get install git
+        $git clone https://github.com/googlecodelabs/iotcore-heartrate
+        $cd iotcore-heartrate
+        $chmod +x initialsoftware.sh
+        $./initialsoftware.sh
+        $chmod +x generate_keys.sh
         $./generate_keys.sh
 
-6. Register a device:
+7. Return to the Cloud shell and copy the public key that was just generated.
+
+        $gcloud compute scp data-simulator-1:/home/[USER_NAME]/.ssh/ec_public.pem .
+
+8. Register a device:
 
         $gcloud beta iot devices create myVM \
             --project=PROJECT_ID \
@@ -44,20 +55,6 @@ to publish the data to the Cloud Pub/Sub topic created above.
             --registry=heartrate \
             --public-key path=ec_public.pem,type=es256
 
-7. Install the dependencies needed to run the python client:
-    
-        $sudo pip install -r requirements.txt
-
-8. Send the mock data (data/SampleData.json) using the no_sensor_cloudiot_gen.py script. This publishes 1000 JSON-formatted messages to the device's MQTT topic one by one:
+8. Return to the VM console. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
 
         $python simulateData.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
-
-    To see all the command line options the script accepts, use 'python no_sensor_cloudiot_gen.py -h'. If you need to generate different mock data, you can use the data/datagen.py script and then use the --json_data_file option to specify the json file which contains your new data.
-    The script pushes JSON-formatted data as follows.
-
-    	Publishing message #1: '{"count": 1, "scanid": "scan000001", "hub_device_id": "hub8", "timestamp": "2017-12-30T20:42:26.761338Z", "storeid": "chi-store-02", "upc": "A800000011", "latlong": "41.879301,-87.655319", "event": "Placed"}'    
-    	Publishing message #2: '{"count": 1, "scanid": "scan000002", "hub_device_id": "hub3", "timestamp": "2018-01-03T20:43:57.077348Z", "storeid": "nyc-store-03", "upc": "A800000039", "latlong": "40.753001,-73.988931", "event": "Placed"}'    
-    	...    
-    	Publishing message #1000: '{"count": 1, "scanid": "scan001000", "hub_device_id": "hub7", "timestamp": "2017-12-30T20:44:33.667104Z", "storeid": "sfo-store-01", "upc": "A800000014", "latlong": "37.791660,-122.403788", "event": "Placed"}'   
-    	Finished.
-
