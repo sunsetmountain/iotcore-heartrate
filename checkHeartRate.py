@@ -58,7 +58,7 @@ def parse_command_line_args():
 	    help='Cloud IoT Core device id')
     parser.add_argument(
             '--private_key_file',
-	    default='./ec_private.pem',
+	    default='../.ssh/ec_private.pem',
             help='Path to private key file.')
     parser.add_argument(
             '--algorithm',
@@ -69,7 +69,7 @@ def parse_command_line_args():
             '--cloud_region', default='us-central1', help='GCP cloud region')
     parser.add_argument(
             '--ca_certs',
-            default='./roots.pem',
+            default='../.ssh/roots.pem',
             help=('CA root from https://pki.google.com/roots.pem'))
     parser.add_argument(
             '--mqtt_bridge_hostname',
