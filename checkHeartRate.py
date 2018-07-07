@@ -14,6 +14,7 @@
 
 #!/usr/bin/python
 
+import argparse
 import time
 import datetime
 import uuid
@@ -29,19 +30,19 @@ me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this 
 # Define some project-based variables to be used below. This should be the only
 # block of variables that you need to edit in order to run this script
 
-ssl_private_key_filepath = './ec_private.pem' #or wherever the security certificate is located
-ssl_algorithm = 'ES256' # Either RS256 or ES256
-root_cert_filepath = './roots.pem'
-project_id = '<GCP project id>' #change to your project ID
-gcp_location = '<GCP location>' #change to the location selected for IoT Core
-registry_id = '<IoT Core registry id>'
-device_id = '<IoT Core device id>'
+#ssl_private_key_filepath = './ec_private.pem' #or wherever the security certificate is located
+#ssl_algorithm = 'ES256' # Either RS256 or ES256
+#root_cert_filepath = './roots.pem'
+#project_id = '<GCP project id>' #change to your project ID
+#gcp_location = '<GCP location>' #change to the location selected for IoT Core
+#registry_id = '<IoT Core registry id>'
+#device_id = '<IoT Core device id>'
 
 # set the following to be indicative of how you are using your heart rate sensor
-sensorID = "s-RaspberryPiHeartRateSensor"
+#sensorID = "s-RaspberryPiHeartRateSensor"
 rejectBPM = 45 # reject anything that is below this BPM threshold
 heartbeatsToCount = 10 # number of heart beats to sample before calculating an average BPM
-receiver_in = 23 # GPIO pin number that the receiver is connected to
+#receiver_in = 23 # GPIO pin number that the receiver is connected to
 
 # end of user-variables
 
@@ -56,18 +57,75 @@ token_life = 60 #lifetime of the JWT token (minutes)
 io.setmode(io.BCM)
 io.setwarnings(False)
 
+def parse_command_line_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description=(
+            'Example Google Cloud IoT Core MQTT device connection code.'))
+    parser.add_argument(
+            '--project_id',
+            required=True,
+            help='GCP cloud project name')
+    parser.add_argument(
+            '--registry_id', 
+	    required=True, 
+	    help='Cloud IoT Core registry id')
+    parser.add_argument(
+            '--device_id', 
+	    required=True, 
+	    help='Cloud IoT Core device id')
+    parser.add_argument(
+            '--private_key_file',
+	    default='./ec_private.pem',
+            required=True, help='Path to private key file.')
+    parser.add_argument(
+            '--algorithm',
+            choices=('RS256', 'ES256'),
+            default='ES256',
+            help='Which encryption algorithm to use to generate the JWT.')
+    parser.add_argument(
+            '--cloud_region', default='us-central1', help='GCP cloud region')
+    parser.add_argument(
+            '--ca_certs',
+            default='./roots.pem',
+            help=('CA root from https://pki.google.com/roots.pem'))
+    parser.add_argument(
+            '--mqtt_bridge_hostname',
+            default='mqtt.googleapis.com',
+            help='MQTT bridge hostname.')
+    parser.add_argument(
+            '--mqtt_bridge_port',
+            choices=(8883, 443),
+            default=8883,
+            type=int,
+            help='MQTT bridge port.')
+    parser.add_argument(
+            '--jwt_expires_minutes',
+            default=token_life,
+            type=int,
+            help=('Expiration time, in minutes, for JWT tokens.'))
+    parser.add_argument(
+            '--sensor_id',
+            default='s-testing',
+            help=('Sensor ID'))
+    parser.add_argument(
+            '--receiver_in',
+            default=23,
+	    type=int,
+            help=('GPIO input pin for the heart rate sensor'))
+    return parser.parse_args()
 
-def create_jwt(cur_time):
+
+def create_jwt(cur_time, privateKeyFilepath, algorithmType):
   token = {
       'iat': cur_time,
       'exp': cur_time + datetime.timedelta(minutes=token_life),
       'aud': project_id
   }
 
-  with open(ssl_private_key_filepath, 'r') as f:
+  with open(privateKeyFilePath, 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, algorithm='ES256') # Assuming RSA, but also supports ECC
+  return jwt.encode(token, private_key, algorithm=algorithmType) # Assuming RSA, but also supports ECC
 
 def error_str(rc):
     return '{}: {}'.format(rc, mqtt.error_string(rc))
@@ -95,6 +153,18 @@ def calcBPM(startTime, endTime):
     return bpm
 
 def main():
+    args = parse_command_line_args()
+    project_id = args.project_id
+    gcp_location = args.cloud_region
+    registry_id = args.registry_id
+    device_id = args.device_id
+    ssl_private_key_filepath = args.private_key_file
+    ssl_algorithm = args.algorithm
+    root_cert_filepath = args.ca_certs
+    sensorID = args.sensor_id
+    googleMQTTURL = args.mqtt_bridge_hostname
+    googleMQTTPort = args.mqtt_bridge_port
+    receiver_in = args.receiver_in
     _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
     _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
 	
@@ -119,13 +189,13 @@ def main():
       # authorization is handled purely with JWT, no user/pass, so username can be whatever
       client.username_pw_set(
           username='unused',
-          password=create_jwt(cur_time))
+          password=create_jwt(cur_time, ssl_private_key_filepath, ssl_algorithm))
 
       client.on_connect = on_connect
       client.on_publish = on_publish
 
       client.tls_set(ca_certs=root_cert_filepath) # Replace this with 3rd party cert if that was used when creating registry
-      client.connect('mqtt.googleapis.com', 8883)
+      client.connect(googleMQTTURL, googleMQTTPort)
 
       jwt_refresh = time.time() + ((token_life - 1) * 60) #set a refresh time for one minute before the JWT expires
 
