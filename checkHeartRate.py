@@ -122,7 +122,7 @@ def create_jwt(cur_time, projectID, privateKeyFilepath, algorithmType):
       'aud': projectID
   }
 
-  with open(privateKeyFilePath, 'r') as f:
+  with open(privateKeyFilepath, 'r') as f:
     private_key = f.read()
 
   return jwt.encode(token, private_key, algorithm=algorithmType) # Assuming RSA, but also supports ECC
