@@ -19,7 +19,8 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 4. Create a Dataflow process
 
-        Calling Google-provided Dataflow templates from the command line is not yet supported. Follow the Codelab to do so via the Cloud Console.
+        Calling Google-provided Dataflow templates from the command line is not yet supported. 
+        Follow the Codelab to do so via the Cloud Console.
 
 4. Create a registry:
 
