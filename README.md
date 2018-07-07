@@ -10,12 +10,12 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 2. Create a BigQuery dataset and table (replace PROJECT_ID with your project):
 
-        $bq --location=US mk --dataset PROJECT_ID:heartRateData
-        $bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
+        bq --location=US mk --dataset PROJECT_ID:heartRateData
+        bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
 
 3. Create a PubSub topic:
 
-        $gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
+        gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
 
 4. Create a Dataflow process:
 
@@ -24,37 +24,37 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 5. Create a registry:
 
-        $gcloud beta iot registries create heartrate \
+        gcloud beta iot registries create heartrate \
             --project=PROJECT_ID \
             --region=us-central1 \
             --event-pubsub-topic=projects/PROJECT_ID/topics/heartratedata
 
 6. Create a VM
 
-        $gcloud compute instances create data-simulator-1 --zone us-central1-c
+        gcloud compute instances create data-simulator-1 --zone us-central1-c
 
 7. Connect to the VM. Install the necessary software and create a security certificate. Note the full path of the directory that the security certificate is stored in (the results of the "pwd" command). Then exit the connection.
 
-        $gcloud compute ssh data-simulator-1
-        $sudo apt-get update
-        $sudo apt-get install git
-        $git clone https://github.com/googlecodelabs/iotcore-heartrate
-        $cd iotcore-heartrate
-        $chmod +x initialsoftware.sh
-        $./initialsoftware.sh
-        $chmod +x generate_keys.sh
-        $./generate_keys.sh
-        $cd ../.ssh
-        $pwd
-        $exit
+        gcloud compute ssh data-simulator-1
+        sudo apt-get update
+        sudo apt-get install git
+        git clone https://github.com/googlecodelabs/iotcore-heartrate
+        cd iotcore-heartrate
+        chmod +x initialsoftware.sh
+        ./initialsoftware.sh
+        chmod +x generate_keys.sh
+        ./generate_keys.sh
+        cd ../.ssh
+        pwd
+        exit
 
 8. Use SCP to copy the public key that was just generated. The path the SSH keys was the result of the "pwd" command in the previous step.
 
-        $gcloud compute scp data-simulator-1:/[PATH TO SSH KEYS]/ec_public.pem .
+        gcloud compute scp data-simulator-1:/[PATH TO SSH KEYS]/ec_public.pem .
 
 9. Register the VM as an IoT device:
 
-        $gcloud beta iot devices create myVM \
+        gcloud beta iot devices create myVM \
             --project=PROJECT_ID \
             --region=us-central1 \
             --registry=heartrate \
@@ -62,7 +62,7 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 10. Connect to the VM. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
 
-        $gcloud compute ssh data-simulator-1
-        $cd iotcore-heartrate
-        $python simulateData.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
-        $exit
+        gcloud compute ssh data-simulator-1
+        cd iotcore-heartrate
+        python simulateData.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
+        exit
