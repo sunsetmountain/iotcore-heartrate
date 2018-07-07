@@ -70,7 +70,7 @@ def create_jwt(cur_time):
   with open(ssl_private_key_filepath, 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, algorithm='RS256') # Assuming RSA, but also supports ECC
+  return jwt.encode(token, private_key, algorithm='ES256') # Assuming RSA, but also supports ECC
 
 def error_str(rc):
     return '{}: {}'.format(rc, mqtt.error_string(rc))
