@@ -158,7 +158,7 @@ def parse_command_line_args():
             '--cloud_region', default='us-central1', help='GCP cloud region')
     parser.add_argument(
             '--ca_certs',
-            default='roots.pem',
+            default='../.ssh/roots.pem',
             help=('CA root from https://pki.google.com/roots.pem'))
     parser.add_argument(
             '--num_messages',
@@ -211,7 +211,8 @@ def main():
         args.private_key_file, args.algorithm, args.ca_certs,
         args.mqtt_bridge_hostname, args.mqtt_bridge_port)
 
-    data_file = "./data/SampleData.json"
+    #data_file = "./data/SampleData.json"
+    data_file = args.json_data_file
     fr = open(data_file, 'r')
     i = 1 
     for line in fr:
