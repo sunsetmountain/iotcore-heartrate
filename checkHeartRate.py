@@ -86,10 +86,6 @@ def parse_command_line_args():
             type=int,
             help=('Expiration time, in minutes, for JWT tokens.'))
     parser.add_argument(
-            '--sensor_id',
-            default='s-testing',
-            help=('Sensor ID'))
-    parser.add_argument(
             '--receiver_in',
             default=23,
 	    type=int,
@@ -143,7 +139,7 @@ def main():
     ssl_private_key_filepath = args.private_key_file
     ssl_algorithm = args.algorithm
     root_cert_filepath = args.ca_certs
-    sensorID = args.sensor_id
+    sensorID = registry_id + "." + device_id
     googleMQTTURL = args.mqtt_bridge_hostname
     googleMQTTPort = args.mqtt_bridge_port
     receiver_in = args.receiver_in
