@@ -6,34 +6,41 @@ This project contains the code necessary to setup either (1) a Raspberry Pi with
 
 NOTE: Replace PROJECT_ID with your project in the following commands
 
-1. Login to Google Cloud. If desired, create a new project and select it once it is ready. Open a Cloud shell
+1. Login to Google Cloud. If desired, create a new project and select it once it is ready. Open a Cloud shell.
 
-2. Create a BigQuery dataset and table:
+2. Enable the necessary APIs
+
+        gcloud services enable compute.googleapis.com
+        gcloud services enable dataflow.googleapis.com
+        gcloud services enable pubsub.googleapis.com
+        gcloud services enable cloudfunctions.googleapis.com
+
+3. Create a BigQuery dataset and table:
 
         bq --location=US mk --dataset PROJECT_ID:heartRateData
         bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
 
-3. Create a PubSub topic:
+4. Create a PubSub topic:
 
         gcloud beta pubsub topics create projects/PROJECT_ID/topics/heartratedata
 
-4. Create a Dataflow process:
+5. Create a Dataflow process:
 
         Calling Google-provided Dataflow templates from the command line is not yet supported. 
         Follow the Codelab to do so via the Cloud Console.
 
-5. Create a registry:
+6. Create a registry:
 
         gcloud beta iot registries create heartrate \
             --project=PROJECT_ID \
             --region=us-central1 \
             --event-pubsub-topic=projects/PROJECT_ID/topics/heartratedata
 
-6. Create a VM
+7. Create a VM
 
         gcloud compute instances create data-simulator-1 --zone us-central1-c
 
-7. Connect to the VM. Install the necessary software and create a security certificate. Note the full path of the directory that the security certificate is stored in (the results of the "pwd" command). Then exit the connection.
+8. Connect to the VM. Install the necessary software and create a security certificate. Note the full path of the directory that the security certificate is stored in (the results of the "pwd" command). Then exit the connection.
 
         gcloud compute ssh data-simulator-1
         sudo apt-get update
@@ -48,11 +55,11 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         pwd
         exit
 
-8. Use SCP to copy the public key that was just generated. The path the SSH keys was the result of the "pwd" command in the previous step.
+9. Use SCP to copy the public key that was just generated. The path the SSH keys was the result of the "pwd" command in the previous step.
 
         gcloud compute scp data-simulator-1:/[PATH TO SSH KEYS]/ec_public.pem .
 
-9. Register the VM as an IoT device:
+10. Register the VM as an IoT device:
 
         gcloud beta iot devices create myVM \
             --project=PROJECT_ID \
@@ -60,7 +67,7 @@ NOTE: Replace PROJECT_ID with your project in the following commands
             --registry=heartrate \
             --public-key path=ec_public.pem,type=es256
 
-10. Connect to the VM. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
+11. Connect to the VM. Send the mock data (data/SampleData.json) using the simulateData.py script. This publishes several hundred JSON-formatted messages to the device's MQTT topic one by one:
 
         gcloud compute ssh data-simulator-1
         cd iotcore-heartrate
