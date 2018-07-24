@@ -13,7 +13,6 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         gcloud services enable compute.googleapis.com
         gcloud services enable dataflow.googleapis.com
         gcloud services enable pubsub.googleapis.com
-        gcloud services enable cloudfunctions.googleapis.com
 
 3. Create a BigQuery dataset and table:
 
