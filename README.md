@@ -86,10 +86,11 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
 13. After you are done, clean everything up
 
-        gcloud dataflow jobs cancel
+        gcloud dataflow jobs list
+        gcloud dataflow jobs cancel [JOB_ID]
         bq rm -r PROJECT_ID:heartRateData
         gcloud beta pubsub topics delete heartratedata
-        gcloud beta iot registries delete heartrate
-
+        gcloud beta iot registries delete heartrate --region=us-central1
+        gcloud compute instances delete data-simulator-1
         
         
