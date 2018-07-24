@@ -19,6 +19,10 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
         bq --location=US mk --dataset PROJECT_ID:heartRateData
         bq mk --table PROJECT_ID:heartRateData.heartRateDataTable sensorID:STRING,uniqueID:STRING,timecollected:TIMESTAMP,heartrate:FLOAT
+        
+   In the case the table needs to be deleted (i.e. in order to be recreated)...
+   
+        bq rm -t -f PROJECT_ID:heartRateData.heartRateDataTable
 
 4. Create a PubSub topic:
 
