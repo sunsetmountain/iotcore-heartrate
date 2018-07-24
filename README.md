@@ -77,3 +77,15 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         cd iotcore-heartrate
         python heartrateSimulator.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
         exit
+
+12. Go to BigQuery, query the data and export it to Google Sheets.
+
+13. After you are done, clean everything up
+
+        gcloud dataflow jobs cancel
+        bq rm -r PROJECT_ID:heartRateData
+        gcloud beta pubsub topics delete heartratedata
+        gcloud beta iot registries delete heartrate
+
+        
+        
