@@ -49,7 +49,7 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         gcloud compute ssh data-simulator-1
         sudo apt-get update
         sudo apt-get install git
-        git clone https://github.com/googlecodelabs/iotcore-heartrate
+        git clone https://github.com/sunsetmountain/iotcore-heartrate
         cd iotcore-heartrate
         chmod +x initialsoftware.sh
         ./initialsoftware.sh
