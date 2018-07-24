@@ -77,6 +77,10 @@ NOTE: Replace PROJECT_ID with your project in the following commands
         cd iotcore-heartrate
         python heartrateSimulator.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM --private_key_file=../.ssh/ec_private.pem
         exit
+        
+    Exit from the Cloud Shell
+    
+        exit
 
 12. Go to BigQuery, query the data and export it to Google Sheets.
 
