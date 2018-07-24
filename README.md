@@ -75,7 +75,7 @@ NOTE: Replace PROJECT_ID with your project in the following commands
 
         gcloud compute ssh data-simulator-1
         cd iotcore-heartrate
-        python heartrateSimulator.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM
+        python heartrateSimulator.py --registry_id=heartrate --project_id=PROJECT_ID --device_id=myVM --private_key_file=../.ssh/ec_private.pem
         exit
 
 12. Go to BigQuery, query the data and export it to Google Sheets.
